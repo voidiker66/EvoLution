@@ -10,6 +10,11 @@ from werkzeug.security import generate_password_hash, \
 import datetime
 from sqlalchemy import create_engine
 #from wtforms.validators import Required
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = '/database/images'
+# only allow images to be uploaded
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
@@ -20,6 +25,7 @@ app.config.update(dict(
 ))
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database/evo_lution.db'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 e = create_engine('sqlite:///database/evo_lution.db')
 
@@ -169,21 +175,54 @@ class AddNewForm(Form):
 		self.animal = None
 
 	def validate_and_insert(self):
-		
-		pass
+		rv = Form.validate(self)
+		if not rv:
+			return False
+		if self.name.data and self.breed.data and self.genes.data and self.picture.data:
+			p = self.upload_file()
+			if p:
+				self.insert(self.name.data, self.breed.data, p, self.genes.data)
+				return True
+		return False
+
+	def insert(self, name, breed, picture, genes):
+		idanimal = e.execute("""insert into animal (name, owner, breed, picture) values (:Name, :Owner, :Breed, :Picture);""",
+			Name=name, Owner=current_user.get_id(), Breed=breed, Picture=picture
+			)
+		idgenes = list()
+		for g in genes:
+			idgenes += e.execute("""insert into attributes (animal, gene, dominance) values (:Animal, :Gene, :Dominance)""",
+				Animal=idanimal, Gene=g, Dominance=2
+			)
+		return (idanimal, idgenes)
+
+	def upload_file():
+		if 'file' not in request.files:
+			flash('No file part')
+			return None
+		file = request.files['file']
+		# if user does not select file, browser also
+		# submit a empty part without filename
+		if file.filename == '':
+			flash('No selected file')
+			return None
+		if file and allowed_file(file.filename):
+			filename = secure_filename(file.filename)
+			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+			return filename
 
 @app.route('/_get_genes/')
 def _get_genes():
-    breed = request.args.get('breed', 1, type=int)
-    genes = [(row.id, row.name) for row in Genes.query.filter_by(breed=breed).all()]
-    return jsonify(genes)
+	breed = request.args.get('breed', 1, type=int)
+	genes = [(row.id, row.name) for row in Genes.query.filter_by(breed=breed).all()]
+	return jsonify(genes)
 
 @app.route('/')
-#@login_required
 def home():
 	return render_template('home.html')
 
 @app.route('/dashboard')
+@login_required
 def dashboard():
 	#print(request.cookies.get('evo_lution_session'))
 	user_id = current_user.get_id()
@@ -217,23 +256,35 @@ def signup():
 
 
 @app.route("/logout")
-# @login_required
+@login_required
 def logout():
 	logout_user()
 	return redirect('/')
 
 
-@app.route("/addition")
+@app.route("/addition", methods=['GET', 'POST'])
+@login_required
 def addition():
 	form = AddNewForm()
 	form.breed.choices = [(g.id, g.name) for g in Breed.query.all()]
 	form.genes.choices = [(g.id, g.name) for g in Genes.query.all()]
+	print("here we are")
 	if form.validate_on_submit():
-		flash("New Animal Added!", category='success')
-		return redirect('/addition')
+		print("validated on submit")
+		if form.validate_and_insert():
+			print("new animal")
+			flash("New Animal Added!", category='success')
+			return redirect('/addition')
+		else:
+			flash("bad input")
+			flash("Error: Check your inputs", category='failure')
 	else:
 		flash("Error: Check your inputs", category='failure')
 	return render_template('addition.html', form=form)
+
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+	return redirect('/login')
 
 
 login_manager.init_app(app)
