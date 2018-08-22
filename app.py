@@ -68,6 +68,14 @@ class Animal(db.Model):
 		self.breed = breed
 		self.picture = picture
 
+class Breed(db.Model):
+	__tablename__ = 'breed'
+	id = db.Column(db.Integer, primary_key = True)
+	name = db.Column(db.String(32))
+
+	def __init__(self, name):
+		self.name = name
+
 class LoginForm(Form):
 	username = TextField('Username', [validators.Required()])
 	password = PasswordField('Password', [validators.Required()])
