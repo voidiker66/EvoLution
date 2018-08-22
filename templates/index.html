@@ -5,5 +5,23 @@ Dashboard
 {% endblock %}
 
 {% block body %}
+<p>
   Welcome back, {{ current_user.firstname }} {{ current_user.lastname }}!
+ </p>
+
+  {% block content %}
+  <p>
+  	does this show up?
+  	<table class="dash-table">
+  	{% for item in data %}
+  	<tr>
+    	<td class="dash-item">{{item.name}}</td>
+    	<td><img class="dash-pic" src={{item.picture}}></img></td>
+	</tr>
+ 	{% endfor %}
+ 	</table>
+  </p>
+  {% endblock %}
+
+
 {% endblock %}

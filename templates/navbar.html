@@ -6,10 +6,11 @@
     </div>
     <ul class="nav navbar-nav">
       {% if current_user.is_authenticated %}
-        <li class="active"><a href="/dashboard">Home</a></li>
+        <li><a href="/dashboard">Home</a></li>
+        <li><a href="/addition">Add New</a></li>
   		  <li><a href="/logout">Logout</a></li>
       {% else %}
-        <li class="active"><a href="/">Home</a></li>
+        <li><a href="/">Home</a></li>
       	<li><a href="/login">Login</a></li>
       	<li><a href="/signup">Signup</a></li>
       {% endif %}

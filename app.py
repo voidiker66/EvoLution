@@ -4,7 +4,7 @@ from flask_restless import APIManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_wtf import Form
-from wtforms import TextField, BooleanField, validators, PasswordField, SubmitField
+from wtforms import TextField, BooleanField, validators, PasswordField, SubmitField, SelectField, FileField
 from werkzeug.security import generate_password_hash, \
 	 check_password_hash
 import datetime
@@ -76,6 +76,28 @@ class Breed(db.Model):
 	def __init__(self, name):
 		self.name = name
 
+class Genes(db.Model):
+	__tablename__ = 'genes'
+	id = db.Column(db.Integer, primary_key = True)
+	name = db.Column(db.String(32))
+	breed = db.Column(db.Integer)
+
+	def __init__(self, name, breed):
+		self.name = name
+		self.breed = breed
+
+class Attributes(db.Model):
+	__tablename__ = 'attributes'
+	id = db.Column(db.Integer, primary_key = True)
+	animal = db.Column(db.Integer)
+	gene = db.Column(db.Integer)
+	dominance = db.Column(db.Integer)
+
+	def __init__(self, animal, gene, dominance):
+		self.animal = animal
+		self.gene = gene
+		self.dominance = dominance
+
 class LoginForm(Form):
 	username = TextField('Username', [validators.Required()])
 	password = PasswordField('Password', [validators.Required()])
@@ -135,6 +157,27 @@ class RegisterForm(Form):
 			)
 		return id
 
+class AddNewForm(Form):
+	name = TextField('Name', [validators.Required()])
+	breed = SelectField('Breed', validators=[validators.Required()], id='select_breed')
+	genes = SelectField('Genes', validators=[validators.Required()], id='select_genes')
+	picture = FileField('Image', [validators.Required()])
+	submit = SubmitField('Submit')
+
+	def __init__(self, *args, **kwargs):
+		Form.__init__(self, *args, **kwargs)
+		self.animal = None
+
+	def validate_and_insert(self):
+		
+		pass
+
+@app.route('/_get_genes/')
+def _get_genes():
+    breed = request.args.get('breed', 1, type=int)
+    genes = [(row.id, row.name) for row in Genes.query.filter_by(breed=breed).all()]
+    return jsonify(genes)
+
 @app.route('/')
 #@login_required
 def home():
@@ -143,7 +186,12 @@ def home():
 @app.route('/dashboard')
 def dashboard():
 	#print(request.cookies.get('evo_lution_session'))
-	return render_template('index.html')
+	user_id = current_user.get_id()
+	animals = Animal.query.filter_by(owner=user_id).all()
+	print(animals)
+	for a in animals:
+		print(a.name)
+	return render_template('index.html', data=animals)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -173,6 +221,19 @@ def signup():
 def logout():
 	logout_user()
 	return redirect('/')
+
+
+@app.route("/addition")
+def addition():
+	form = AddNewForm()
+	form.breed.choices = [(g.id, g.name) for g in Breed.query.all()]
+	form.genes.choices = [(g.id, g.name) for g in Genes.query.all()]
+	if form.validate_on_submit():
+		flash("New Animal Added!", category='success')
+		return redirect('/addition')
+	else:
+		flash("Error: Check your inputs", category='failure')
+	return render_template('addition.html', form=form)
 
 
 login_manager.init_app(app)
