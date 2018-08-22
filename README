@@ -1,0 +1,6 @@
+https://flask-login.readthedocs.io/en/latest/
+
+{{ form.password.label }}<br>
+<p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+
+http://flask.pocoo.org/snippets/54/
