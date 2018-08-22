@@ -34,13 +34,17 @@ class User(db.Model, UserMixin):
 	__tablename__ = 'user'
 	id = db.Column(db.Integer, primary_key = True)
 	username = db.Column(db.String(32))
+	firstname = db.Column(db.String(32))
+	lastname = db.Column(db.String(32))
 	email = db.Column(db.String(32))
 	password = db.Column(db.String(32))
 
-	def __init__(self, username, email, password):
+	def __init__(self, username, firstname, lastname, email, password):
 		self.username = username
 		self.set_password(password)
 		self.email = email
+		self.firstname = firstname
+		self.lastname = lastname
 
 	def set_password(self, password):
 		self.pw_hash = generate_password_hash(password)
@@ -48,6 +52,21 @@ class User(db.Model, UserMixin):
 	def check_password(self, password):
 		return check_password_hash(self.password, password)
 		#return password == self.password
+
+class Animal(db.Model):
+	__tablename__ = 'animal'
+	id = db.Column(db.Integer, primary_key = True)
+	name = db.Column(db.String(32))
+	owner = db.Column(db.Integer)
+	breed = db.Column(db.Integer)
+	picture = db.Column(db.String(32))
+
+	def __init__(self, name, owner, breed, picture):
+		self.name = name
+		self.owner = owner
+		self.email = email
+		self.breed = breed
+		self.picture = picture
 
 class LoginForm(Form):
 	username = TextField('Username', [validators.Required()])
@@ -82,6 +101,8 @@ class RegisterForm(Form):
 	email = TextField('E-Mail', [validators.Required()])
 	password = PasswordField('Password', [validators.Required()])
 	passwordCopy = PasswordField('Re-Enter Password', [validators.Required()])
+	firstname = TextField('First Name', [validators.Required()])
+	lastname = TextField('Last Name', [validators.Required()])
 	submit = SubmitField('Submit')
 
 	def __init__(self, *args, **kwargs):
@@ -94,15 +115,15 @@ class RegisterForm(Form):
 			return False
 		if self.username.data and self.password.data and self.passwordCopy.data:
 			if self.password.data == self.passwordCopy.data:
-				user = User(self.username.data, self.email.data, self.password.data)
-				self.insert(user.username, user.email, user.pw_hash)
+				user = User(self.username.data, self.firstname.data, self.lastname.data, self.email.data, self.password.data)
+				self.insert(user.username, user.firstname, user.lastname, user.email, user.pw_hash)
 				return True
 			return False
 		return False
 
-	def insert(self, username, email, password):
-		id = e.execute("""insert into user (username, password, email, is_active) values (:Username, :Password, :Email, '1');""",
-			Username=username, Email=email, Password=password
+	def insert(self, username, firstname, lastname, email, password):
+		id = e.execute("""insert into user (username, firstname, lastname, password, email, is_active) values (:Username, :FirstName, :LastName, :Password, :Email, '1');""",
+			Username=username, FirstName=firstname, LastName=lastname, Email=email, Password=password
 			)
 		return id
 
@@ -153,3 +174,4 @@ manager.create_api(User, methods=['GET'],results_per_page=10)
 
 if __name__ == "__main__":
 	app.run(host="0.0.0.0", debug=True)
+	#app.run(host='0.0.0.0', port=80)
