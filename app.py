@@ -244,7 +244,7 @@ def logout():
 @login_required
 def addition():
 	form = AddNewForm()
-	form.breed.choices = [(g.id, g.name) for g in Breed.query.all()]
+	form.breed.choices = [(g.id, g.bName) for g in Breed.query.all()]
 	form.genes.choices = [(g.id, g.name) for g in Genes.query.all()]
 
 	if form.validate_on_submit():
@@ -255,10 +255,9 @@ def addition():
 			filename = (os.path.join(app.config['UPLOAD_FOLDER'], uuidname))
 			file.save('.' + filename)
 
-			breed = dict(form.breed.choices).get(int(form.breed.data))
 			genes = dict(form.genes.choices).get(int(form.genes.data))
 			
-			animal = Animal(form.name.data, current_user.get_id(), breed, filename)
+			animal = Animal(form.name.data, current_user.get_id(), form.breed.data, filename)
 			db.session.add(animal)
 			db.session.flush()
 			# for g in form.genes.data:

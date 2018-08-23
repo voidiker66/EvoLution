@@ -3,6 +3,16 @@ body {
 }
 
 .dash-pic {
-	width: 200px;
-	height: auto;
+	width: 100%;
+	height: 100%;
+}
+
+.dash-item {
+	width: 100px;
+	height: 100px;
+	padding: 5px;
+}
+
+td {
+	border-bottom: solid #000000 2px;
 }
