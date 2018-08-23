@@ -15,7 +15,7 @@ Dashboard
   	{% for item in data %}
   	<tr>
     	<td class="dash-item">{{item.name}}</td>
-    	<td class="dash-item">{{Breed.query.filter_by(id=item.breed).first()}}
+    	<td class="dash-item">{{item.bName}}
     	<td><img class="dash-pic" src={{item.picture}}></img></td>
 	</tr>
  	{% endfor %}

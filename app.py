@@ -203,7 +203,8 @@ def home():
 def dashboard():
 	#print(request.cookies.get('evo_lution_session'))
 	user_id = current_user.get_id()
-	animals = Animal.query.join(Breed).filter_by(owner=user_id).all()
+	#animals = Animal.query.join(Breed).filter_by(owner=user_id).all()
+	animals = e.execute("""select * from animal inner join breed on animal.breed=breed.id where animal.owner=""" + str(user_id) + """;""")
 	return render_template('index.html', data=animals)
 
 @app.route('/login', methods=['GET', 'POST'])
