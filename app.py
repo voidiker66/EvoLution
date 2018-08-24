@@ -173,7 +173,10 @@ class AddNewForm(Form):
 
 	def validate(self):
 		if self.name.data and self.breed.data and self.genes.data and self.picture.data:
-			print(request.files)
+			if len(self.genes.data) > 5:
+				flash("Please select a maximum of 5 genes.", category='warning')
+				return False
+
 			if 'picture' not in request.files:
 				flash("No file part")
 				return False
