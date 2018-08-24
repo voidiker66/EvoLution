@@ -204,8 +204,10 @@ def dashboard():
 	#print(request.cookies.get('evo_lution_session'))
 	user_id = current_user.get_id()
 	#animals = Animal.query.join(Breed).filter_by(owner=user_id).all()
-	animals = e.execute("""select * from animal inner join breed on animal.breed=breed.id where animal.owner=""" + str(user_id) + """;""")
-	return render_template('index.html', data=animals)
+	animals = list(e.execute("""select animal.id, animal.name, animal.owner, animal.breed, animal.picture, breed.bName from animal inner join breed on animal.breed=breed.id where animal.owner=""" + str(user_id) + """;"""))
+	gene_data = list(e.execute("""select attributes.id, attributes.animal, genes.name from attributes inner join genes on attributes.gene=genes.id"""))
+
+	return render_template('index.html', data=animals, genes=gene_data)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

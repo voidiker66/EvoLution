@@ -12,11 +12,24 @@ Dashboard
   {% block content %}
   <p>
   	<table class="dash-table">
+  	<tr>
+  		<th class="dash-item">Picture</th>
+  		<th class="dash-item">Name</th>
+  		<th class="dash-item">Breed</th>
+  		<th class="dash-item">Attributes</th>
+  	</tr>
   	{% for item in data %}
   	<tr>
   		<td class="dash-item"><a href="#"><img class="dash-pic" src={{item.picture}}></a></img></td>
     	<td class="dash-item"><a href="#">{{item.name}}</a></td>
     	<td class="dash-item"><a href="#">{{item.bName}}</a></td>
+    	<td class="dash-item"><select>
+    		{% for a in genes %}
+    			{% if a.animal == item.id %}
+    				<option value="{{ a.id }}">{{ a.name }}</option>
+    			{% endif %}
+    		{% endfor %}
+    	</select></td>
 	</tr>
  	{% endfor %}
  	</table>
