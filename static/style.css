@@ -1,6 +1,6 @@
-body {
-	background-color: cyan;
-}
+/*body {
+	text-align: center;
+}*/
 
 .dash-pic {
 	width: 100%;
@@ -15,4 +15,16 @@ body {
 
 td {
 	border-bottom: solid #000000 2px;
+}
+
+.evo-form {
+	display: inline-block;
+	text-align: left;
+	padding: 10px;
+	border: solid #000000 2px;
+	left: 10px;
+}
+
+.form-parent {
+	text-align: center;
 }

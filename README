@@ -1,5 +1,7 @@
 Flask website that allows users to keep track of their animals for breeding purposes.
 
+For developers:
+The test username, password is 'admin', 'admin'
 
 TODO:
 1. add genes to db so users can more accurately represent the animals they want to present

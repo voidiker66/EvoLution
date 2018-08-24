@@ -139,7 +139,7 @@ class RegisterForm(Form):
 	username = TextField('Username', validators=[validators.Required()])
 	email = TextField('E-Mail', validators=[validators.Required(), validators.Email()])
 	password = PasswordField('New Password', [
-		validators.DataRequired(),
+		validators.Required(),
 		validators.EqualTo('confirm', message='Passwords must match')
 	])
 	confirm = PasswordField('Repeat Password')

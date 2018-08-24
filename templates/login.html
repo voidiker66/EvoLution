@@ -5,8 +5,9 @@ Login
 {% endblock %}
 
 {% block body %}
+<div class="form-parent">
     <h1>Sign In</h1>
-    <form action="" method="post" novalidate>
+    <form action="" method="post" novalidate class="evo-form">
         {{ form.hidden_tag() }}
         <p>
             {{ form.username.label }}<br>
@@ -19,4 +20,5 @@ Login
         
         <p>{{ form.submit() }}</p>
     </form>
+</div>
 {% endblock %}
