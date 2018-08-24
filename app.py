@@ -4,7 +4,7 @@ from flask_restless import APIManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_wtf import Form
-from wtforms import TextField, BooleanField, validators, PasswordField, SubmitField, SelectField, FileField
+from wtforms import TextField, BooleanField, validators, PasswordField, SubmitField, SelectField, FileField, SelectMultipleField
 from werkzeug.security import generate_password_hash, \
 	 check_password_hash
 import datetime
@@ -164,7 +164,7 @@ class RegisterForm(Form):
 class AddNewForm(Form):
 	name = TextField('Name', [validators.Required()])
 	breed = SelectField('Breed', validators=[validators.Required()], id='select_breed')
-	genes = SelectField('Genes', validators=[validators.Required()], id='select_genes')
+	genes = SelectMultipleField('Genes', validators=[validators.Required()], id='select_genes')
 	picture = FileField('Image', validators=[validators.Required()])
 	submit = SubmitField('Submit')
 
@@ -257,16 +257,16 @@ def addition():
 			filename = (os.path.join(app.config['UPLOAD_FOLDER'], uuidname))
 			file.save('.' + filename)
 
-			genes = dict(form.genes.choices).get(int(form.genes.data))
+			genes = dict(form.genes.choices)
 			
 			animal = Animal(form.name.data, current_user.get_id(), form.breed.data, filename)
 			db.session.add(animal)
 			db.session.flush()
-			# for g in form.genes.data:
-			# 	gene = Genes(animal.id, g.value, 2)
-			# 	db.session.add(gene)
-			gene = Attributes(animal.id, Genes.query.filter_by(name=genes).first().id)
-			db.session.add(gene)
+
+			for g in form.genes.data:
+				attr = Attributes(animal.id, Genes.query.filter_by(id=g).first().id)
+				db.session.add(attr)
+				
 			db.session.commit()
 			flash("New Animal Added!", category='success')
 			return redirect('/dashboard')
