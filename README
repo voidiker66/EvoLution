@@ -5,5 +5,6 @@ The test username, password is 'admin', 'admin'
 
 TODO:
 1. add genes to db so users can more accurately represent the animals they want to present
-	starting with hognose snakes, then ball python, then bearded dragons
+	starting with hognose snakes, then ball python, then bearded dragons (check)
 2. users can search for breeders in their area that have {animal} with {props} so they can buy
+3. 'post' snakes that are for sale using dashboard, which prompts Price, Contact Info, Location
