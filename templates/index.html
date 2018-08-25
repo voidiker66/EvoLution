@@ -17,6 +17,7 @@ Dashboard
   		<th class="dash-item">Name</th>
   		<th class="dash-item">Breed</th>
   		<th class="dash-item">Attributes</th>
+      <th class="dash-item">For Sale</th>
   	</tr>
   	{% for item in data %}
   	<tr>
@@ -30,6 +31,17 @@ Dashboard
     			{% endif %}
     		{% endfor %}
     	</td>
+      <td class="dash-item">
+        {{ item.forSale == 1 }}
+      </td>
+      <td class="dash-item">
+        <!--<form action="/modify?mod_id={{ item.id }}" method="post">
+          <input type="submit" value="Modify" />
+        </form>-->
+        <form action="/delete?del_id={{ item.id }}" method="post">
+          <input type="submit" value="Delete" />
+        </form>
+      </td>
 	</tr>
  	{% endfor %}
  	</table>

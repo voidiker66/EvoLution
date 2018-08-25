@@ -245,7 +245,7 @@ def delete():
 def modify():
 	mod_id = request.args.get('mod_id')
 	if current_user.id == Animal.query.filter_by(id=mod_id).first().id:
-		flash("You do not have access to this animal.")
+		flash("You do not have access to this animal.", category='warning')
 		return redirect('/dashboard')
 	animal = Animal.query.filter_by(id=mod_id).first()
 	form = ModifyForm()
