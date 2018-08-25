@@ -4,7 +4,7 @@ from flask_restless import APIManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_wtf import Form
-from wtforms import TextField, BooleanField, validators, PasswordField, SubmitField, SelectField, FileField, SelectMultipleField, BooleanField
+from wtforms import TextField, BooleanField, validators, PasswordField, SubmitField, SelectField, FileField, SelectMultipleField
 from werkzeug.security import generate_password_hash, \
 	 check_password_hash
 import datetime
@@ -71,17 +71,15 @@ class Animal(db.Model):
 	owner = db.Column(db.Integer, db.ForeignKey("user.id"))
 	breed = db.Column(db.Integer, db.ForeignKey("breed.id"))
 	picture = db.Column(db.String(32))
-	forSale = db.Column(db.Integer)
 
 	ownerR = db.relationship('User', foreign_keys=[owner])
 	breedR = db.relationship('Breed', foreign_keys=[breed])
 
-	def __init__(self, name, owner, breed, picture, forSale):
+	def __init__(self, name, owner, breed, picture):
 		self.name = name
 		self.owner = owner
 		self.breed = breed
 		self.picture = picture
-		self.forSale = forSale
 
 class Breed(db.Model):
 	__tablename__ = 'breed'
@@ -168,7 +166,6 @@ class AddNewForm(Form):
 	breed = SelectField('Breed', validators=[validators.Required()], id='select_breed')
 	genes = SelectMultipleField('Genes', validators=[validators.Required()], id='select_genes')
 	picture = FileField('Image', validators=[validators.Required()])
-	forSale = BooleanField('For Sale', validators=[validators.Required()])
 	submit = SubmitField('Submit')
 
 	def __init__(self, *args, **kwargs):
@@ -176,10 +173,7 @@ class AddNewForm(Form):
 
 	def validate(self):
 		if self.name.data and self.breed.data and self.genes.data and self.picture.data:
-			if len(self.genes.data) > 5:
-				flash("Please select a maximum of 5 genes.", category='warning')
-				return False
-
+			print(request.files)
 			if 'picture' not in request.files:
 				flash("No file part")
 				return False
@@ -193,76 +187,6 @@ class AddNewForm(Form):
 			else:
 				flash('Image must be in png, jpg, jpeg, or gif.')
 		return False
-
-class ModifyForm(Form):
-	name = TextField('Name', [validators.Required()])
-	breed = SelectField('Breed', validators=[validators.Required()], id='select_breed')
-	genes = SelectMultipleField('Genes', validators=[validators.Required()], id='select_genes')
-	picture = FileField('Image', validators=[validators.Required()])
-	forSale = BooleanField('For Sale', validators=[validators.Required()])
-	submit = SubmitField('Submit')
-
-	def __init__(self, *args, **kwargs):
-		Form.__init__(self, *args, **kwargs)
-
-	def validate(self):
-		if self.name.data and self.breed.data and self.genes.data and self.picture.data:
-			if len(self.genes.data) > 5:
-				flash("Please select a maximum of 5 genes.", category='warning')
-				return False
-
-			if 'picture' not in request.files:
-				flash("No file part")
-				return False
-			self.pictureFile = request.files['picture']
-			# if user does not select file, browser also
-			# submit a empty part without filename
-			if self.pictureFile.filename == '':
-				flash('No selected file')
-			elif self.pictureFile and allowed_file(self.pictureFile.filename):
-				return True
-			else:
-				flash('Image must be in png, jpg, jpeg, or gif.')
-		return False
-
-@app.route('/delete', methods=['GET','POST'])
-@login_required
-def delete():
-	del_id = request.args.get('del_id')
-	if current_user.id == Animal.query.filter_by(id=del_id).first().id:
-		flash("You do not have access to this animal.")
-		return redirect('/dashboard')
-	db.session.delete(Animal.query.filter_by(id=del_id).first())
-	a = Attributes.query.filter_by(animal=del_id).all()
-	for attr in a:
-		db.session.delete(attr)
-	db.session.commit()
-	flash("Animal deleted!", category="success")
-	return redirect('/dashboard')
-
-@app.route('/modify', methods=['GET','POST'])
-@login_required
-def modify():
-	mod_id = request.args.get('mod_id')
-	if current_user.id == Animal.query.filter_by(id=mod_id).first().id:
-		flash("You do not have access to this animal.")
-		return redirect('/dashboard')
-	animal = Animal.query.filter_by(id=mod_id).first()
-	form = ModifyForm()
-	form.breed.choices = [(g.id, g.bName) for g in Breed.query.all()]
-	form.genes.choices = [(g.id, g.name) for g in Genes.query.all()]
-	form.name.data = animal.name
-	form.breed.process_data(Breed.query.filter_by(id=animal.breed).first())
-	form.genes.process_data(Attributes.query.with_entities(Attributes.gene).filter_by(animal=animal.id).all())
-
-	if form.validate_on_submit():
-		if form.validate():
-			pass
-		else:
-			flash("Did not modify.", category='warning')
-			return redirect('/modify?mod_id=' + mod_id)
-
-	return render_template('modify.html', form=form, data=animal)
 
 @app.route('/_get_genes/')
 def _get_genes():
@@ -280,7 +204,7 @@ def dashboard():
 	#print(request.cookies.get('evo_lution_session'))
 	user_id = current_user.get_id()
 	#animals = Animal.query.join(Breed).filter_by(owner=user_id).all()
-	animals = list(e.execute("""select animal.id, animal.name, animal.owner, animal.breed, animal.picture, breed.bName, animal.forSale from animal inner join breed on animal.breed=breed.id where animal.owner=""" + str(user_id) + """;"""))
+	animals = list(e.execute("""select animal.id, animal.name, animal.owner, animal.breed, animal.picture, breed.bName from animal inner join breed on animal.breed=breed.id where animal.owner=""" + str(user_id) + """;"""))
 	gene_data = list(e.execute("""select attributes.id, attributes.animal, genes.name from attributes inner join genes on attributes.gene=genes.id"""))
 
 	return render_template('index.html', data=animals, genes=gene_data)
@@ -335,7 +259,7 @@ def addition():
 
 			genes = dict(form.genes.choices)
 			
-			animal = Animal(form.name.data, current_user.get_id(), form.breed.data, filename, (1 if form.forSale.data else 0))
+			animal = Animal(form.name.data, current_user.get_id(), form.breed.data, filename)
 			db.session.add(animal)
 			db.session.flush()
 
