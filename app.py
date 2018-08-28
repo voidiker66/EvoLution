@@ -351,6 +351,11 @@ def addition():
 			flash("Error: Check your inputs", category='danger')
 	return render_template('addition.html', form=form)
 
+@app.route("/feed", methods=['GET', 'POST'])
+@login_required
+def feed():
+	return render_template('feed.html')
+
 @login_manager.unauthorized_handler
 def unauthorized_callback():
 	return redirect('/login')
