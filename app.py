@@ -361,6 +361,10 @@ def unauthorized_callback():
 	return redirect('/login')
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
 login_manager.init_app(app)
 
 manager = APIManager(app, flask_sqlalchemy_db=db)
