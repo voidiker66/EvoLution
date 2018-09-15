@@ -116,7 +116,7 @@ class Attributes(db.Model):
 class LoginForm(Form):
 	username = TextField('Username', [validators.Required()])
 	password = PasswordField('Password', [validators.Required()])
-	submit = SubmitField('Submit')
+	submit = SubmitField('Log In')
 
 	def __init__(self, *args, **kwargs):
 		Form.__init__(self, *args, **kwargs)
@@ -140,7 +140,7 @@ class LoginForm(Form):
 class RegisterForm(Form):
 	username = TextField('Username', validators=[validators.Required()])
 	email = TextField('E-Mail', validators=[validators.Required(), validators.Email()])
-	password = PasswordField('New Password', [
+	password = PasswordField('Password', [
 		validators.Required(),
 		validators.EqualTo('confirm', message='Passwords must match')
 	])
@@ -155,10 +155,10 @@ class RegisterForm(Form):
 	def validate(self):
 		if self.username.data and self.password.data and self.confirm.data:
 			if User.query.filter_by(username=self.username.data).first():
-				flash('An account with that username already exists.', category='danger')
+				flash('An account with that username already exists.', category='red')
 				return False
 			if User.query.filter_by(email=self.email.data).first():
-				flash('An account with that email already exists.', category='danger')
+				flash('An account with that email already exists.', category='red')
 				return False
 			return True
 		return False
@@ -168,7 +168,7 @@ class AddNewForm(Form):
 	breed = SelectField('Breed', validators=[validators.Required()], id='select_breed')
 	genes = SelectMultipleField('Genes', validators=[validators.Required()], id='select_genes')
 	picture = FileField('Image', validators=[validators.Required()])
-	forSale = BooleanField('For Sale', validators=[validators.Required()])
+	forSale = BooleanField('For Sale', validators=[])
 	submit = SubmitField('Submit')
 
 	def __init__(self, *args, **kwargs):
@@ -177,7 +177,7 @@ class AddNewForm(Form):
 	def validate(self):
 		if self.name.data and self.breed.data and self.genes.data and self.picture.data:
 			if len(self.genes.data) > 5:
-				flash("Please select a maximum of 5 genes.", category='warning')
+				flash("Please select a maximum of 5 genes.", category='orange')
 				return False
 
 			if 'picture' not in request.files:
@@ -208,7 +208,7 @@ class ModifyForm(Form):
 	def validate(self):
 		if self.name.data and self.breed.data and self.genes.data and self.picture.data:
 			if len(self.genes.data) > 5:
-				flash("Please select a maximum of 5 genes.", category='warning')
+				flash("Please select a maximum of 5 genes.", category='orange')
 				return False
 
 			if 'picture' not in request.files:
@@ -230,14 +230,14 @@ class ModifyForm(Form):
 def delete():
 	del_id = request.args.get('del_id')
 	if current_user.id == Animal.query.filter_by(id=del_id).first().id:
-		flash("You do not have access to this animal.")
+		flash("You do not have access to this animal.", category='orange')
 		return redirect('/dashboard')
 	db.session.delete(Animal.query.filter_by(id=del_id).first())
 	a = Attributes.query.filter_by(animal=del_id).all()
 	for attr in a:
 		db.session.delete(attr)
 	db.session.commit()
-	flash("Animal deleted!", category="success")
+	flash("Animal deleted!", category="green")
 	return redirect('/dashboard')
 
 @app.route('/modify', methods=['GET','POST'])
@@ -245,7 +245,7 @@ def delete():
 def modify():
 	mod_id = request.args.get('mod_id')
 	if current_user.id == Animal.query.filter_by(id=mod_id).first().id:
-		flash("You do not have access to this animal.", category='warning')
+		flash("You do not have access to this animal.", category='orange')
 		return redirect('/dashboard')
 	animal = Animal.query.filter_by(id=mod_id).first()
 	form = ModifyForm()
@@ -259,7 +259,7 @@ def modify():
 		if form.validate():
 			pass
 		else:
-			flash("Did not modify.", category='warning')
+			flash("Did not modify.", category='orange')
 			return redirect('/modify?mod_id=' + mod_id)
 
 	return render_template('modify.html', form=form, data=animal)
@@ -281,7 +281,7 @@ def dashboard():
 	user_id = current_user.get_id()
 	#animals = Animal.query.join(Breed).filter_by(owner=user_id).all()
 	animals = list(e.execute("""select animal.id, animal.name, animal.owner, animal.breed, animal.picture, breed.bName, animal.forSale from animal inner join breed on animal.breed=breed.id where animal.owner=""" + str(user_id) + """;"""))
-	gene_data = list(e.execute("""select attributes.id, attributes.animal, genes.name from attributes inner join genes on attributes.gene=genes.id"""))
+	gene_data = list(e.execute("""select attributes.id, attributes.animal, genes.name from attributes inner join genes on attributes.gene=genes.id order by genes.name asc"""))
 
 	return render_template('index.html', data=animals, genes=gene_data)
 
@@ -290,10 +290,10 @@ def login():
 	form = LoginForm()
 	if form.validate_on_submit():
 		if form.validate():
-			flash("You're now logged in!", category='success')
+			flash("You're now logged in!", category='green')
 			return redirect('/dashboard')
 		else:
-			flash("No user with that email/password combo", category='danger')
+			flash("No user with that email/password combo", category='red')
 	return render_template('login.html', form=form)
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -304,10 +304,10 @@ def signup():
 			user = User(form.username.data, form.firstname.data, form.lastname.data, form.email.data, form.password.data)
 			db.session.add(user)
 			db.session.commit()
-			flash("You're now registered!", category='success')
+			flash("You're now registered!", category='green')
 			return redirect('/login')
 		else:
-			flash("Error: Check your inputs", category='danger')
+			flash("Error: Check your inputs", category='red')
 	return render_template('register.html', form=form)
 
 
@@ -344,11 +344,11 @@ def addition():
 				db.session.add(attr)
 				
 			db.session.commit()
-			flash("New Animal Added!", category='success')
+			flash("New Animal Added!", category='green')
 			return redirect('/dashboard')
 		else:
 			print("here we are")
-			flash("Error: Check your inputs", category='danger')
+			flash("Error: Check your inputs", category='red')
 	return render_template('addition.html', form=form)
 
 @app.route("/feed", methods=['GET', 'POST'])

@@ -5,33 +5,44 @@ Addition
 {% endblock %}
 
 {% block body %}
-<div class="form-parent">
-<h1>Add New Animal</h1>
-<form action="" method="post" enctype="multipart/form-data" class="evo-form">
+<div class="w-full max-w-xs">
+<form action="" method="post" enctype="multipart/form-data" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
         {{ form.hidden_tag() }}
-        <p>
-            {{ form.name.label }}<br>
-            {{ form.name(size=32) }}
-        </p>
-        <p>
-            {{ form.breed.label }}<br>
-            {{ form.breed }}
-        </p>
-        <p>
-            {{ form.genes.label }}<br>
-            {{ form.genes(class_="chosen-select") }}
-        </p>
-        <p>
-            {{ form.picture.label }}<br>
-            {{ form.picture }}
-        </p>
-        <p>
-            {{ form.forSale.label }}
-            {{ form.forSale }}
-        </p>
+        <div class="mb-4">
+            <p>
+                {{ form.name.label(class_='block text-grey-darker text-sm font-bold mb-2') }}<br>
+                {{ form.name(size=32, class_='shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker leading-tight focus:outline-none focus:shadow-outline') }}
+            </p>
+            <p>
+                {{ form.breed.label(class_='block text-grey-darker text-sm font-bold mb-2') }}<br>
+                {{ form.breed(class_='block appearance-none w-full bg-white border border-grey-light px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline') }}
+            </p>
+            <p>
+                {{ form.genes.label(class_='block text-grey-darker text-sm font-bold mb-2') }}<br>
+                {{ form.genes(class_="chosen-select block appearance-none w-full bg-white border border-grey-light px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline") }}
+            </p>
+            <p>
+                {{ form.picture.label(class_='block text-grey-darker text-sm font-bold mb-2') }}<br>
+                {{ form.picture(class_='block appearance-none w-full bg-white hover:border-grey px-4 py-2 pr-8 rounded leading-tight') }}
+            </p>
+            <p>
+                <div class="md:w-full">
+                    {{ form.forSale.label(class_='inline-block text-grey-darker text-sm font-bold md:text-right mb-1 md:mb-0 pr-4') }}
+                    {{ form.forSale(class_='inline-block bg-grey-darker rounded py-2 px-4 text-grey-darker') }}
+                </div>
+                <div class="md:w-2/3">
+                    
+                </div>
+            </p>
+        </div>
         
-        <p>{{ form.submit() }}</p>
+        <div class="flex items-center justify-between">
+            {{ form.submit(class_='bg-blue hover:bg-blue-dark text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline') }}
+        </div>
     </form>
+    <p class="text-center text-grey text-xs">
+    ©2018 EvoLution. All rights reserved.
+  </p>
 </div>
 
 
